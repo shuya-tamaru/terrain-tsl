@@ -20,6 +20,7 @@ import { octaveNoiseVec3 } from "./utils/octaveNoise";
 export class Terrain {
   private scene: THREE.Scene;
   private gfxConfig: GfxConfig;
+  private subdivisions: number;
   private geometry!: THREE.PlaneGeometry;
   private material!: THREE.MeshStandardNodeMaterial;
   private mesh!: THREE.Mesh;
@@ -27,6 +28,7 @@ export class Terrain {
   constructor(scene: THREE.Scene, gfxConfig: GfxConfig) {
     this.scene = scene;
     this.gfxConfig = gfxConfig;
+    this.subdivisions = this.gfxConfig.subdivisions;
     this.createGeometry();
     this.createMaterial();
     this.createMesh();
@@ -34,14 +36,17 @@ export class Terrain {
   }
 
   private createGeometry() {
-    this.geometry = new THREE.PlaneGeometry(100, 100, 400, 400);
+    this.geometry = new THREE.PlaneGeometry(
+      100,
+      100,
+      this.subdivisions,
+      this.subdivisions
+    );
     this.geometry.rotateX(-Math.PI / 2);
   }
 
   private createMaterial() {
-    this.material = new THREE.MeshStandardNodeMaterial({
-      color: "#85d534",
-    });
+    this.material = new THREE.MeshStandardNodeMaterial();
   }
 
   private createMesh() {
@@ -50,6 +55,20 @@ export class Terrain {
 
   public addToScene() {
     this.scene.add(this.mesh);
+  }
+
+  public updateSubdivisions(subdivisions: number) {
+    this.subdivisions = subdivisions;
+    this.geometry.dispose();
+    this.mesh.geometry.dispose();
+    this.geometry = new THREE.PlaneGeometry(
+      100,
+      100,
+      this.subdivisions,
+      this.subdivisions
+    );
+    this.geometry.rotateX(-Math.PI / 2);
+    this.mesh.geometry = this.geometry;
   }
 
   private updateMaterialNode() {

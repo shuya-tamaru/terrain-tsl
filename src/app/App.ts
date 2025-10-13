@@ -55,7 +55,7 @@ export class App {
       this.sceneManager.scene,
       this.gfxConfig
     );
-    new ParamsControls(this.gfxConfig);
+    new ParamsControls(this.gfxConfig, this.terrain);
   }
 
   private addObjectsToScene(): void {

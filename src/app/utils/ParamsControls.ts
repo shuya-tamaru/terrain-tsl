@@ -1,6 +1,7 @@
 import { GfxConfig } from "../gfx/gfxConfig";
 import { GUI, Controller } from "lil-gui";
 import * as THREE from "three/webgpu";
+import type { Terrain } from "../gfx/terrain";
 
 interface ColorPreset {
   colorSnow: string;
@@ -15,6 +16,7 @@ interface ColorPreset {
 export class ParamsControls {
   private gui!: GUI;
   private gfxConfig!: GfxConfig;
+  private terrain!: Terrain;
   private presets = {
     mountain: true,
     snowMountain: false,
@@ -54,8 +56,9 @@ export class ParamsControls {
     },
   };
 
-  constructor(gfxConfig: GfxConfig) {
+  constructor(gfxConfig: GfxConfig, terrain: Terrain) {
     this.gfxConfig = gfxConfig;
+    this.terrain = terrain;
     this.initGUI();
   }
 
@@ -104,6 +107,7 @@ export class ParamsControls {
   private initGUI() {
     this.gui = new GUI();
     const sceneFolder = this.gui.addFolder("Scene");
+    const geometryFolder = this.gui.addFolder("Geometry");
     const terrainDeformationFolder = this.gui.addFolder("Terrain Deformation");
     const colorFolder = this.gui.addFolder("Color");
     const thresholdFolder = this.gui.addFolder("Threshold");
@@ -262,5 +266,12 @@ export class ParamsControls {
       .onChange((value: THREE.Color) =>
         this.gfxConfig.waterSurfaceColor.value.set(value)
       );
+    geometryFolder
+      .add(this.gfxConfig, "subdivisions", 100, 1000, 100)
+      .name("Subdivisions")
+      .onChange((value: number) => {
+        this.gfxConfig.subdivisions = value;
+        this.terrain.updateSubdivisions(value);
+      });
   }
 }

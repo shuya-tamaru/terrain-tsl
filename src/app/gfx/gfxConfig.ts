@@ -1,6 +1,8 @@
 import { color, uniform } from "three/tsl";
 
 export class GfxConfig {
+  //geometry
+  public subdivisions = 800;
   //terrain deformation
   public initialFrequency = uniform(4.03);
   public initialAmplitude = uniform(0.25);
