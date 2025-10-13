@@ -8,6 +8,11 @@ A procedural terrain rendering project built with Three.js TSL (Three.js Shading
 
 **[👉 Live Demo](https://www.styublog.com/shader/terrain)**
 
+## References
+
+- [GPU Gem3](https://developer.nvidia.com/gpugems/gpugems3/foreword)
+- [Three.js Example](https://threejs.org/examples/?q=tsl#webgpu_tsl_procedural_terrain)
+
 ## SNS
 
 - 🐦 Twitter/X: [@tama20013](https://x.com/tama20013)

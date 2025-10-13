@@ -8,6 +8,11 @@ Three.js TSL（Three.js Shading Language）で構築されたプロシージャ�
 
 **[👉 ライブデモ](https://www.styublog.com/shader/terrain)**
 
+## 参考
+
+- [GPU Gem3](https://developer.nvidia.com/gpugems/gpugems3/foreword)
+- [Three.js Example](https://threejs.org/examples/?q=tsl#webgpu_tsl_procedural_terrain)
+
 ## SNS
 
 - 🐦 Twitter/X: [@tama20013](https://x.com/tama20013)
