@@ -3,6 +3,7 @@ import {
   float,
   Fn,
   Loop,
+  mx_noise_vec3,
   positionLocal,
   uint,
   varying,
@@ -10,7 +11,7 @@ import {
 } from "three/tsl";
 import * as THREE from "three/webgpu";
 import { GfxConfig } from "./gfxConfig";
-import { octaveNoise } from "./utils/octaveNoise";
+import { octaveNoiseVec3 } from "./utils/octaveNoise";
 
 export class WaterSurface {
   private scene: THREE.Scene;
@@ -38,7 +39,7 @@ export class WaterSurface {
       transmission: 1,
       roughness: 0.0,
       ior: 1.333,
-      color: "#4db2ff",
+      // color: this.gfxConfig.waterSurfaceColor.value,
       side: THREE.DoubleSide,
       depthWrite: false,
       blending: THREE.NormalBlending,
@@ -61,23 +62,29 @@ export class WaterSurface {
       octaves,
       heightRange,
       waterThreshold,
+      warpStrength,
+      warpFrequency,
     } = this.gfxConfig;
     this.material.positionNode = Fn(() => {
       const waterPos = positionLocal.xyz.toVar();
-      const height = float(0).toVar();
+      const density = vec3(0.0).toVar();
       const frequency = initialFrequency.toVar();
       const amplitude = initialAmplitude.toVar();
+
+      const ws = waterPos.toVar();
+      const warp = mx_noise_vec3(ws.mul(warpFrequency)).mul(warpStrength);
+      ws.addAssign(warp);
 
       const i = uint(1).toVar();
       Loop(i.lessThan(octaves), () => {
         //@ts-ignore
-        const noise = octaveNoise(positionLocal, frequency, amplitude);
-        height.addAssign(noise);
+        const noise = octaveNoiseVec3(ws, frequency, amplitude);
+        density.addAssign(noise);
         frequency.mulAssign(0.5);
         amplitude.mulAssign(2.0);
         i.addAssign(1);
       });
-      waterPos.y.addAssign(height);
+      waterPos.addAssign(density);
       vWaterPosition.assign(waterPos);
 
       const position = positionLocal.xyz.toVar();
@@ -96,7 +103,7 @@ export class WaterSurface {
 
       const isWater = heightNormalized.lessThan(waterThreshold);
       Discard(isWater.not());
-      return vec3(0.0, 0.3, 1.0);
+      return this.gfxConfig.waterSurfaceColor;
     })();
   }
 }

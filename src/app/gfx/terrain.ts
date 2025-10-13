@@ -1,6 +1,7 @@
 import * as THREE from "three/webgpu";
 import { GfxConfig } from "./gfxConfig";
 import {
+  clamp,
   cross,
   dot,
   float,
@@ -15,7 +16,7 @@ import {
   varying,
   vec3,
 } from "three/tsl";
-import { octaveNoise } from "./utils/octaveNoise";
+import { octaveNoiseVec3 } from "./utils/octaveNoise";
 
 export class Terrain {
   private scene: THREE.Scene;
@@ -34,7 +35,7 @@ export class Terrain {
   }
 
   private createGeometry() {
-    this.geometry = new THREE.PlaneGeometry(100, 100, 500, 500);
+    this.geometry = new THREE.PlaneGeometry(100, 100, 400, 400);
     this.geometry.rotateX(-Math.PI / 2);
   }
 
@@ -59,13 +60,19 @@ export class Terrain {
       octaves,
       heightRange,
       waterThreshold,
+      sandThreshold,
+      forestThreshold,
       grassThreshold,
       rockThreshold,
       slopeThreshold,
       colorWater,
+      colorForest,
       colorGround,
       colorRock,
       colorSnow,
+      colorSand,
+      warpStrength,
+      warpFrequency,
     } = this.gfxConfig;
 
     const vPosition = varying(vec3());
@@ -81,9 +88,9 @@ export class Terrain {
         .add(vec3(0.0, 0.0, normalLookUpShift.negate()))
         .toVar();
 
-      const height = float(0).toVar();
-      const heightA = float(0).toVar();
-      const heightB = float(0).toVar();
+      const density = vec3(0.0).toVar();
+      const densityA = vec3(0.0).toVar();
+      const densityB = vec3(0.0).toVar();
       const frequency = initialFrequency.toVar();
       const amplitude = initialAmplitude.toVar();
 
@@ -93,9 +100,9 @@ export class Terrain {
       const wsB = neighborB.toVar();
 
       // warp (domain warping)
-      const warp = mx_noise_vec3(ws.mul(0.004)).mul(8.0);
-      const warpA = mx_noise_vec3(wsA.mul(0.004)).mul(8.0);
-      const warpB = mx_noise_vec3(wsB.mul(0.004)).mul(8.0);
+      const warp = mx_noise_vec3(ws.mul(warpFrequency)).mul(warpStrength);
+      const warpA = mx_noise_vec3(wsA.mul(warpFrequency)).mul(warpStrength);
+      const warpB = mx_noise_vec3(wsB.mul(warpFrequency)).mul(warpStrength);
       ws.addAssign(warp);
       wsA.addAssign(warpA);
       wsB.addAssign(warpB);
@@ -104,25 +111,24 @@ export class Terrain {
       const i = uint(1).toVar();
       Loop(i.lessThan(octaves), () => {
         //@ts-ignore
-        const noise = octaveNoise(ws, frequency, amplitude);
+        const noise = octaveNoiseVec3(ws, frequency, amplitude);
         //@ts-ignore
-        const noiseA = octaveNoise(wsA, frequency, amplitude);
+        const noiseA = octaveNoiseVec3(wsA, frequency, amplitude);
         //@ts-ignore
-        const noiseB = octaveNoise(wsB, frequency, amplitude);
+        const noiseB = octaveNoiseVec3(wsB, frequency, amplitude);
 
-        height.addAssign(noise);
-        heightA.addAssign(noiseA);
-        heightB.addAssign(noiseB);
+        density.addAssign(noise);
+        densityA.addAssign(noiseA);
+        densityB.addAssign(noiseB);
 
         frequency.mulAssign(0.5);
         amplitude.mulAssign(2.0);
         i.addAssign(1);
       });
-
       // apply height
-      position.y.addAssign(height);
-      neighborA.y.addAssign(heightA);
-      neighborB.y.addAssign(heightB);
+      position.y.addAssign(density.y);
+      neighborA.y.addAssign(densityA.y);
+      neighborB.y.addAssign(densityB.y);
 
       const toA = neighborA.sub(position).normalize();
       const toB = neighborB.sub(position).normalize();
@@ -143,26 +149,38 @@ export class Terrain {
         .add(heightRange)
         .div(heightRange.mul(2.0));
 
-      const noise = mx_noise_float(vPosition.xz.mul(10), 1, 0).mul(0.1);
+      const noise = mx_noise_float(vPosition.xz.mul(10), 1, 0).mul(0.03);
 
       const waterZone = smoothstep(0.0, waterThreshold, heightNormalized);
-      const grassZone = smoothstep(
+      const sandZone = smoothstep(
         waterThreshold,
+        sandThreshold,
+        heightNormalized
+      );
+      const forestZone = smoothstep(
+        sandThreshold,
+        forestThreshold,
+        heightNormalized
+      );
+      const grassZone = smoothstep(
+        forestThreshold,
         grassThreshold,
-        heightNormalized.add(noise)
+        heightNormalized
       );
       const rockZone = smoothstep(
         grassThreshold,
         rockThreshold,
-        heightNormalized
+        heightNormalized.add(noise)
       );
       const snowZone = smoothstep(
         rockThreshold,
         1.0,
-        heightNormalized.sub(slope.mul(slopeThreshold))
+        heightNormalized.add(noise).sub(slope.mul(slopeThreshold))
       );
 
       finalColor.assign(waterZone.mix(finalColor, colorWater));
+      finalColor.assign(sandZone.mix(finalColor, colorSand));
+      finalColor.assign(forestZone.mix(finalColor, colorForest));
       finalColor.assign(grassZone.mix(finalColor, colorGround));
       finalColor.assign(rockZone.mix(finalColor, colorRock));
       finalColor.assign(snowZone.mix(finalColor, colorSnow));
