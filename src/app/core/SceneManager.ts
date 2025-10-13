@@ -7,7 +7,7 @@ export class SceneManager {
     this.scene = new THREE.Scene();
     this.scene.background = environmentMap;
     this.scene.environment = environmentMap;
-    this.scene.backgroundBlurriness = 0.5;
+    this.scene.backgroundBlurriness = 1.0;
   }
 
   public add(object: THREE.Object3D) {
