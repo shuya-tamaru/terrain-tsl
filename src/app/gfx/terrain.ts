@@ -1,7 +1,6 @@
 import * as THREE from "three/webgpu";
 import { GfxConfig } from "./gfxConfig";
 import {
-  clamp,
   cross,
   dot,
   float,

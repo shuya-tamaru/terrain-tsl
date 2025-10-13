@@ -1,6 +1,5 @@
 import {
   Discard,
-  float,
   Fn,
   Loop,
   mx_noise_vec3,
