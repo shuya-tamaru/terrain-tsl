@@ -3,7 +3,7 @@ import { ControlsManager } from "./core/ControlManager";
 import { RendererManager } from "./core/RendererManager";
 import { SceneManager } from "./core/SceneManager";
 import { GfxConfig } from "./gfx/gfxConfig";
-import { Mountain } from "./gfx/mountain";
+import { Terrain } from "./gfx/terrain";
 import * as THREE from "three/webgpu";
 import { WaterSurface } from "./gfx/waterSurface";
 import { ParamsControls } from "./utils/ParamsControls";
@@ -15,7 +15,7 @@ export class App {
   private controlsManager!: ControlsManager;
 
   private gfxConfig!: GfxConfig;
-  private mountain!: Mountain;
+  private terrain!: Terrain;
   private waterSurface!: WaterSurface;
 
   private environmentMap: THREE.Texture;
@@ -50,7 +50,7 @@ export class App {
       this.rendererManager.renderer.domElement
     );
     this.gfxConfig = new GfxConfig();
-    this.mountain = new Mountain(this.sceneManager.scene, this.gfxConfig);
+    this.terrain = new Terrain(this.sceneManager.scene, this.gfxConfig);
     this.waterSurface = new WaterSurface(
       this.sceneManager.scene,
       this.gfxConfig
@@ -59,7 +59,7 @@ export class App {
   }
 
   private addObjectsToScene(): void {
-    this.mountain.addToScene();
+    this.terrain.addToScene();
     this.waterSurface.addToScene();
   }
 

@@ -7,6 +7,7 @@ import {
   Fn,
   Loop,
   mx_noise_float,
+  mx_noise_vec3,
   positionLocal,
   smoothstep,
   transformNormalToView,
@@ -16,7 +17,7 @@ import {
 } from "three/tsl";
 import { octaveNoise } from "./utils/octaveNoise";
 
-export class Mountain {
+export class Terrain {
   private scene: THREE.Scene;
   private gfxConfig: GfxConfig;
   private geometry!: THREE.PlaneGeometry;
@@ -86,22 +87,39 @@ export class Mountain {
       const frequency = initialFrequency.toVar();
       const amplitude = initialAmplitude.toVar();
 
+      // warp前の座標をコピー
+      const ws = positionLocal.xyz.toVar();
+      const wsA = neighborA.toVar();
+      const wsB = neighborB.toVar();
+
+      // warp (domain warping)
+      const warp = mx_noise_vec3(ws.mul(0.004)).mul(8.0);
+      const warpA = mx_noise_vec3(wsA.mul(0.004)).mul(8.0);
+      const warpB = mx_noise_vec3(wsB.mul(0.004)).mul(8.0);
+      ws.addAssign(warp);
+      wsA.addAssign(warpA);
+      wsB.addAssign(warpB);
+
+      // fBmループ
       const i = uint(1).toVar();
       Loop(i.lessThan(octaves), () => {
         //@ts-ignore
-        const noise = octaveNoise(positionLocal, frequency, amplitude);
+        const noise = octaveNoise(ws, frequency, amplitude);
         //@ts-ignore
-        const noiseA = octaveNoise(neighborA, frequency, amplitude);
+        const noiseA = octaveNoise(wsA, frequency, amplitude);
         //@ts-ignore
-        const noiseB = octaveNoise(neighborB, frequency, amplitude);
+        const noiseB = octaveNoise(wsB, frequency, amplitude);
+
         height.addAssign(noise);
         heightA.addAssign(noiseA);
         heightB.addAssign(noiseB);
+
         frequency.mulAssign(0.5);
         amplitude.mulAssign(2.0);
         i.addAssign(1);
       });
 
+      // apply height
       position.y.addAssign(height);
       neighborA.y.addAssign(heightA);
       neighborB.y.addAssign(heightB);
