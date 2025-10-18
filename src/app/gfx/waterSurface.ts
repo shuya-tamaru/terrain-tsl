@@ -29,7 +29,7 @@ export class WaterSurface {
   }
 
   private createGeometry() {
-    this.geometry = new THREE.PlaneGeometry(100, 100, 500, 500);
+    this.geometry = new THREE.PlaneGeometry(100, 100, 50, 50);
     this.geometry.rotateX(-Math.PI * 0.5);
   }
 
@@ -38,7 +38,6 @@ export class WaterSurface {
       transmission: 1,
       roughness: 0.0,
       ior: 1.333,
-      // color: this.gfxConfig.waterSurfaceColor.value,
       side: THREE.DoubleSide,
       depthWrite: false,
       blending: THREE.NormalBlending,
@@ -66,7 +65,7 @@ export class WaterSurface {
     } = this.gfxConfig;
     this.material.positionNode = Fn(() => {
       const waterPos = positionLocal.xyz.toVar();
-      const density = vec3(0.0).toVar();
+      const height = vec3(0.0).toVar();
       const frequency = initialFrequency.toVar();
       const amplitude = initialAmplitude.toVar();
 
@@ -78,12 +77,12 @@ export class WaterSurface {
       Loop(i.lessThan(octaves), () => {
         //@ts-ignore
         const noise = octaveNoiseVec3(ws, frequency, amplitude);
-        density.addAssign(noise);
+        height.addAssign(noise);
         frequency.mulAssign(0.5);
         amplitude.mulAssign(2.0);
         i.addAssign(1);
       });
-      waterPos.addAssign(density);
+      waterPos.addAssign(height);
       vWaterPosition.assign(waterPos);
 
       const position = positionLocal.xyz.toVar();
