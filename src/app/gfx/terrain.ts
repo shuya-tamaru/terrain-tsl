@@ -46,7 +46,9 @@ export class Terrain {
   }
 
   private createMaterial() {
-    this.material = new THREE.MeshStandardNodeMaterial();
+    this.material = new THREE.MeshStandardNodeMaterial({
+      side: THREE.DoubleSide,
+    });
   }
 
   private createMesh() {
