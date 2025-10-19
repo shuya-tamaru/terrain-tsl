@@ -1,9 +1,14 @@
 import {
   Discard,
+  float,
   Fn,
   Loop,
+  mix,
   mx_noise_vec3,
+  mx_worley_noise_vec3,
   positionLocal,
+  smoothstep,
+  time,
   uint,
   varying,
   vec3,
@@ -35,10 +40,10 @@ export class WaterSurface {
 
   private createMaterial() {
     this.material = new THREE.MeshPhysicalNodeMaterial({
-      transmission: 1,
+      color: 0x001144,
+      transmission: 0.6,
       roughness: 0.0,
       ior: 1.333,
-      // color: this.gfxConfig.waterSurfaceColor.value,
       side: THREE.DoubleSide,
       depthWrite: false,
       blending: THREE.NormalBlending,
@@ -96,13 +101,35 @@ export class WaterSurface {
     })();
 
     this.material.colorNode = Fn(() => {
+      const basePos = positionLocal
+        .add(vec3(time.mul(2), 0.0, time.mul(0.3)))
+        .toVar();
+
+      const warpFreq = float(0.03);
+      const warpStrength = float(3.0);
+      const warp = mx_noise_vec3(basePos.mul(warpFreq).add(time.mul(0.3))).mul(
+        warpStrength
+      );
+      const ws = basePos.add(warp);
+      const frequencyUV = float(0.02);
+
+      const voronoi = mx_worley_noise_vec3(ws.mul(frequencyUV));
+      const voronoi2 = mx_worley_noise_vec3(ws.mul(frequencyUV).mul(4.0));
+      const voronoi3 = mx_worley_noise_vec3(ws.mul(frequencyUV).mul(10.0));
+      const edge = smoothstep(
+        0,
+        0.99,
+        voronoi.x.add(voronoi2.x).add(voronoi3.x).div(3.0)
+      );
+      const baseColor = mix(vec3(0.0, 0.2, 0.9), vec3(1.0), edge);
+
       const heightNormalized = vWaterPosition.y
         .add(heightRange)
         .div(heightRange.mul(2.0));
 
       const isWater = heightNormalized.lessThan(waterThreshold);
       Discard(isWater.not());
-      return this.gfxConfig.waterSurfaceColor;
+      return baseColor;
     })();
   }
 }
