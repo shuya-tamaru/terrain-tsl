@@ -22,8 +22,8 @@ export class GfxConfig {
   //colors
   public colorSnow = uniform(color("#cccccc"));
   public colorRock = uniform(color("#949089"));
-  public colorForest = uniform(color("#1a522e"));
   public colorGround = uniform(color("#85d534"));
+  public colorForest = uniform(color("#1a522e"));
   public colorSand = uniform(color("#deb887"));
   public colorWater = uniform(color("#34a5d5"));
   public waterSurfaceColor = uniform(color("#a3c0d7"));

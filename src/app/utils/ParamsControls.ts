@@ -74,32 +74,31 @@ export class ParamsControls {
 
     // Update color controller displays
     if (this.colorControllers.snow) {
-      (this.colorControllers.snow as any).object.color = preset.colorSnow;
+      this.colorControllers.snow.setValue(preset.colorSnow);
       this.colorControllers.snow.updateDisplay();
     }
     if (this.colorControllers.rock) {
-      (this.colorControllers.rock as any).object.color = preset.colorRock;
+      this.colorControllers.rock.setValue(preset.colorRock);
       this.colorControllers.rock.updateDisplay();
     }
     if (this.colorControllers.ground) {
-      (this.colorControllers.ground as any).object.color = preset.colorGround;
+      this.colorControllers.ground.setValue(preset.colorGround);
       this.colorControllers.ground.updateDisplay();
     }
     if (this.colorControllers.forest) {
-      (this.colorControllers.forest as any).object.color = preset.colorForest;
+      this.colorControllers.forest.setValue(preset.colorForest);
       this.colorControllers.forest.updateDisplay();
     }
     if (this.colorControllers.sand) {
-      (this.colorControllers.sand as any).object.color = preset.colorSand;
+      this.colorControllers.sand.setValue(preset.colorSand);
       this.colorControllers.sand.updateDisplay();
     }
     if (this.colorControllers.water) {
-      (this.colorControllers.water as any).object.color = preset.colorWater;
+      this.colorControllers.water.setValue(preset.colorWater);
       this.colorControllers.water.updateDisplay();
     }
     if (this.colorControllers.waterSurface) {
-      (this.colorControllers.waterSurface as any).object.color =
-        preset.waterSurfaceColor;
+      this.colorControllers.waterSurface.setValue(preset.waterSurfaceColor);
       this.colorControllers.waterSurface.updateDisplay();
     }
   }

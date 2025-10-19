@@ -98,17 +98,17 @@ export class Terrain {
 
     this.material.positionNode = Fn(() => {
       const normalLookUpShift = float(0.01);
-      const position = positionLocal.xyz.toVar();
-      const neighborA = positionLocal.xyz
+      const position = positionLocal.toVar();
+      const neighborA = positionLocal
         .add(vec3(normalLookUpShift, 0.0, 0.0))
         .toVar();
-      const neighborB = positionLocal.xyz
+      const neighborB = positionLocal
         .add(vec3(0.0, 0.0, normalLookUpShift.negate()))
         .toVar();
 
-      const density = vec3(0.0).toVar();
-      const densityA = vec3(0.0).toVar();
-      const densityB = vec3(0.0).toVar();
+      const height = vec3(0.0).toVar();
+      const heightA = vec3(0.0).toVar();
+      const heightB = vec3(0.0).toVar();
       const frequency = initialFrequency.toVar();
       const amplitude = initialAmplitude.toVar();
 
@@ -135,18 +135,18 @@ export class Terrain {
         //@ts-ignore
         const noiseB = octaveNoiseVec3(wsB, frequency, amplitude);
 
-        density.addAssign(noise);
-        densityA.addAssign(noiseA);
-        densityB.addAssign(noiseB);
+        height.addAssign(noise);
+        heightA.addAssign(noiseA);
+        heightB.addAssign(noiseB);
 
         frequency.mulAssign(0.5);
         amplitude.mulAssign(2.0);
         i.addAssign(1);
       });
       // apply height
-      position.y.addAssign(density.y);
-      neighborA.y.addAssign(densityA.y);
-      neighborB.y.addAssign(densityB.y);
+      position.y.addAssign(height.y);
+      neighborA.y.addAssign(heightA.y);
+      neighborB.y.addAssign(heightB.y);
 
       const toA = neighborA.sub(position).normalize();
       const toB = neighborB.sub(position).normalize();
